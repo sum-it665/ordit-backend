@@ -7,7 +7,7 @@ const OpenAI = require("openai");
 dotenv.config();
 
 if (!process.env.OPENAI_API_KEY) {
-  console.error("❌ ERROR: OPENAI_API_KEY is missing in .env file");
+  console.error("❌ ERROR: OPENAI_API_KEY is missing in environment variables");
   process.exit(1); // Stop the server if key is missing
 }
 
@@ -47,8 +47,8 @@ app.get("/", (req, res) => {
   res.send("🚀 Orbit Backend is running!");
 });
 
-// Start server
-const PORT = process.env.PORT || 5000;
+// ✅ Render requires using ONLY process.env.PORT
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
-  console.log(`✅ Backend running on http://localhost:${PORT}`);
+  console.log(`✅ Backend running on port ${PORT}`);
 });
