@@ -1,26 +1,19 @@
-const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
-const OpenAI = require("openai");
+import express from "express";
+import dotenv from "dotenv";
+import fetch from "node-fetch";
 
-// Load .env variables
 dotenv.config();
-
-if (!process.env.OPENAI_API_KEY) {
-  console.error("❌ ERROR: OPENAI_API_KEY is missing in environment variables");
-  process.exit(1); // Stop the server if key is missing
-}
-
 const app = express();
-app.use(cors());
+
+// Middleware
 app.use(express.json());
 
-// OpenAI client
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+// Test route
+app.get("/", (req, res) => {
+  res.send("🚀 Orbit Backend is running!");
 });
 
-// Chat endpoint
+// Chat route
 app.post("/chat", async (req, res) => {
   try {
     const { message } = req.body;
@@ -29,26 +22,34 @@ app.post("/chat", async (req, res) => {
       return res.status(400).json({ error: "Message is required" });
     }
 
-    const response = await client.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: message }],
+    // Call OpenAI API
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: message }],
+      }),
     });
 
-    const botReply = response.choices[0].message.content;
-    res.json({ reply: botReply });
+    const data = await response.json();
+
+    if (data.error) {
+      return res.status(500).json({ error: data.error.message });
+    }
+
+    res.json({ reply: data.choices[0].message.content });
   } catch (error) {
-    console.error("❌ OpenAI API Error:", error);
-    res.status(500).json({ error: "Something went wrong with AI request" });
+    console.error("Error:", error);
+    res.status(500).json({ error: "Something went wrong" });
   }
 });
 
-// Test route
-app.get("/", (req, res) => {
-  res.send("🚀 Orbit Backend is running!");
-});
-
-// ✅ Render requires using ONLY process.env.PORT
-const PORT = process.env.PORT;
-app.listen(PORT, () => {
-  console.log(`✅ Backend running on port ${PORT}`);
+// Server listening (Render fix: 0.0.0.0 instead of localhost)
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Orbit Backend running on port ${PORT}`);
 });
