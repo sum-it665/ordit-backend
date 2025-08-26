@@ -8,13 +8,13 @@ const app = express();
 // Middleware
 app.use(express.json());
 
-// Test route
+// Root test route
 app.get("/", (req, res) => {
   res.send("🚀 Orbit Backend is running!");
 });
 
-// Chat route
-app.post("/chat", async (req, res) => {
+// API Routes
+app.post("/api/chat", async (req, res) => {
   try {
     const { message } = req.body;
 
@@ -48,7 +48,7 @@ app.post("/chat", async (req, res) => {
   }
 });
 
-// Server listening (Render fix: 0.0.0.0 instead of localhost)
+// Server listening
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Orbit Backend running on port ${PORT}`);
